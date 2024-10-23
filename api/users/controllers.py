@@ -23,7 +23,13 @@ class UserController:
         user = User.query.filter_by(username=username,password=password).first()
         return user if user else []
 
-    def create_user(username,password):
-        user = User(username,password)
+    def create_user(username,password,email):
+        user = User(username,password,email)
+        db.session.add(user)
+        db.session.commit()
+
+    def create_bot_user():
+        user = User('Support','password','bot@college.com')
+        user.is_bot = True
         db.session.add(user)
         db.session.commit()

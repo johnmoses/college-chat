@@ -100,3 +100,8 @@ celerybeat-schedule
 
 # mypy
 .mypy_cache/
+
+# Models
+/api/lm/base
+/api/lm/logs
+/api/lm/output

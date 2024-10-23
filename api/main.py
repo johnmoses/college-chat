@@ -7,10 +7,12 @@ from flask_session import Session
 from flask_migrate import Migrate
 from users import bp as users_bp
 from chats import bp as chats_bp
+from college import bp as college_bp
 from config.base import Config
 from config.db import db
 from users.models import ChatsUsers
 from chats.models import Chat, Message
+from users.controllers import UserController
 from chats.controllers import ChatController
 
 app = Flask(__name__)
@@ -43,6 +45,7 @@ Session(app)
 
 app.register_blueprint(users_bp)
 app.register_blueprint(chats_bp)
+app.register_blueprint(college_bp)
 
 entity_vars = {}
 
@@ -52,6 +55,7 @@ def initdb_command():
     db.drop_all()
     db.create_all()
     print('Initialized the database.')
+    UserController.create_bot_user()
 
 
 @app.route('/test/')
