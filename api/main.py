@@ -1,27 +1,27 @@
 import os
 import time
-from flask import Flask, render_template, request, redirect, url_for, session
-from flask_socketio import SocketIO, emit, join_room, leave_room
+from flask import Flask, request
 from flask_cors import CORS
+from flask_socketio import SocketIO, emit, join_room, leave_room
 from flask_session import Session
 from flask_migrate import Migrate
-from users import bp as users_bp
+from accounts import bp as accounts_bp
 from chats import bp as chats_bp
 from college import bp as college_bp
 from config.base import Config
 from config.db import db
-from users.models import ChatsUsers
+from config.ma import ma
+from accounts.models import ChatsUsers
 from chats.models import Chat, Message
-from users.controllers import UserController
+from college.models import Course, Registration
 from chats.controllers import ChatController
 
 app = Flask(__name__)
 app.config.from_object(Config)
-app.config["SESSION_PERMANENT"] = False
-app.config['SESSION_TYPE'] = 'filesystem'
-app.config['SECRET_KEY'] = 'super secret key'
+app.json.compact = False
 
 db.init_app(app)
+ma.init_app(app)
 migrate = Migrate(app, db, compare_type=True)
 
 CORS(app, resources={r"/*": {"origins": "*"}})
@@ -43,7 +43,7 @@ socketio = SocketIO(
 )
 Session(app)
 
-app.register_blueprint(users_bp)
+app.register_blueprint(accounts_bp)
 app.register_blueprint(chats_bp)
 app.register_blueprint(college_bp)
 
@@ -52,10 +52,20 @@ entity_vars = {}
 @app.cli.command('initdb')
 def initdb_command():
     """Drops and creates the database tables."""
-    db.drop_all()
+    # db.drop_all()
     db.create_all()
     print('Initialized the database.')
-    UserController.create_bot_user()
+
+@app.cli.command('recreatedb')
+def recreatedb_command():
+    """Recreates local database tables."""
+    Message.__table__.drop(db.engine)
+    ChatsUsers.__table__.drop(db.engine)
+    Chat.__table__.drop(db.engine)
+    Course.__table__.drop(db.engine)
+    Registration.__table__.drop(db.engine)
+    db.create_all()
+    print('Recreated the database.')
 
 
 @app.route('/test/')
@@ -65,10 +75,7 @@ def test_page():
 
 @app.route('/')
 def index():
-    if 'user_id' in session:
-        print('user_id: ', session['user_id'])
-        return redirect(url_for('chats.chat'))
-    return render_template('index.html')
+    return '<p>Welcome to College Chat</p>'
 
 
 @socketio.on('join')

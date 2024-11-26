@@ -29,8 +29,8 @@ class Registration(db.Model):
     course_id = db.Column(db.Integer, db.ForeignKey('courses_course.id'))
     student_id = db.Column(db.Integer, db.ForeignKey('User.id'))
 
-    course = db.relationship("Course", backref="coursesregistrationcourse", viewonly=True, cascade='all,delete')
-    registrant = db.relationship('User', backref="coursesregistrant", cascade='all,delete')
+    course = db.relationship("Course", backref="courseregistrations", viewonly=True, cascade='all,delete')
+    registrant = db.relationship('User', backref="registrantcourses", cascade='all,delete')
 
     def __init__(self, course_id, student_id):
         self.course_id = course_id
